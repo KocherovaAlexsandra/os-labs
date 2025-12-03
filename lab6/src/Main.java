@@ -4,137 +4,118 @@ public class Main {
 
     public static void main(String[] args) {
 
-        int[] sizes = {100, 1000, 5000, 10000, 20000};
+        int[] sizes = {100, 1000, 5000, 10000};   // размеры данных
+        Random rnd = new Random();
 
-        System.out.println("Лабораторная работа №6 — Вариант 0 (Сортировка пузырьком)");
-        System.out.println("Структуры данных: ArrayList, LinkedList, ArrayDeque\n");
+        for (int n : sizes) {
+            System.out.println("\n=== Размер: " + n + " ===");
 
-        System.out.printf("%-15s %-20s %-20s %-20s\n",
-                "Размер", "ArrayList (мс)", "LinkedList (мс)", "ArrayDeque (мс)");
+            int[] base = generateArray(n, rnd);
 
-        for (int size : sizes) {
+            // ArrayList
+            ArrayList<Integer> al = toArrayList(base);
+            long t1 = bubbleSortArrayList(al);
+            System.out.println("ArrayList:  " + t1 + " ms");
 
-            long tArr = testArrayList(size);
-            long tLink = testLinkedList(size);
-            long tDeque = testArrayDeque(size);
+            // LinkedList (через массив)
+            LinkedList<Integer> ll = toLinkedList(base);
+            long t2 = bubbleSortLinkedList(ll);
+            System.out.println("LinkedList: " + t2 + " ms");
 
-            System.out.printf("%-15d %-20d %-20d %-20d\n",
-                    size, tArr, tLink, tDeque);
-        }
-
-        System.out.println("\nАналитическая сложность Bubble Sort: O(N^2)");
-        System.out.println("Эксперимент показывает квадратичный рост времени.");
-    }
-
-
-    // ---------- 1. Реализация пузырька над ArrayList ----------
-    public static long testArrayList(int n) {
-        ArrayList<Integer> list = generateArrayList(n);
-
-        long start = System.currentTimeMillis();
-        bubbleSortArrayList(list);
-        long end = System.currentTimeMillis();
-
-        return end - start;
-    }
-
-    public static void bubbleSortArrayList(ArrayList<Integer> list) {
-        int n = list.size();
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) {
-                if (list.get(j) > list.get(j + 1)) {
-                    int temp = list.get(j);
-                    list.set(j, list.get(j + 1));
-                    list.set(j + 1, temp);
-                }
-            }
+            // ArrayDeque (через массив)
+            ArrayDeque<Integer> dq = toArrayDeque(base);
+            long t3 = bubbleSortArrayDeque(dq);
+            System.out.println("ArrayDeque: " + t3 + " ms");
         }
     }
 
-
-    // ---------- 2. Реализация пузырька над LinkedList ----------
-    public static long testLinkedList(int n) {
-        LinkedList<Integer> list = generateLinkedList(n);
-
-        long start = System.currentTimeMillis();
-        bubbleSortLinkedList(list);
-        long end = System.currentTimeMillis();
-
-        return end - start;
+    // ===== Генерация исходного массива =====
+    static int[] generateArray(int n, Random rnd) {
+        int[] a = new int[n];
+        for (int i = 0; i < n; i++) a[i] = rnd.nextInt(1000000);
+        return a;
     }
 
-    public static void bubbleSortLinkedList(LinkedList<Integer> list) {
-        int n = list.size();
-        ListIterator<Integer> it;
-
-        for (int i = 0; i < n - 1; i++) {
-            it = list.listIterator();
-            int prev = it.next();
-
-            for (int j = 0; j < n - i - 1; j++) {
-                int curr = it.next();
-                if (prev > curr) {
-                    it.set(prev);
-                    it.previous();
-                    it.previous();
-                    it.set(curr);
-                    it.next();
-                    prev = curr;
-                } else {
-                    prev = curr;
-                }
-            }
-        }
-    }
-
-
-    // ---------- 3. Реализация для ArrayDeque ----------
-    public static long testArrayDeque(int n) {
-        ArrayDeque<Integer> dq = generateDeque(n);
-
-        // BubbleSort требует массив → извлекаем
-        Integer[] arr = dq.toArray(new Integer[0]);
-
-        long start = System.currentTimeMillis();
-        bubbleSortArray(arr);
-        long end = System.currentTimeMillis();
-
-        return end - start;
-    }
-
-    public static void bubbleSortArray(Integer[] arr) {
-        int n = arr.length;
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) {
-                if (arr[j] > arr[j + 1]) {
-                    int t = arr[j];
-                    arr[j] = arr[j + 1];
-                    arr[j + 1] = t;
-                }
-            }
-        }
-    }
-
-
-    // ---------- Генерация данных ----------
-    public static ArrayList<Integer> generateArrayList(int n) {
-        ArrayList<Integer> list = new ArrayList<>(n);
-        Random r = new Random();
-        for (int i = 0; i < n; i++) list.add(r.nextInt(1000000));
+    // ===== Преобразования =====
+    static ArrayList<Integer> toArrayList(int[] a) {
+        ArrayList<Integer> list = new ArrayList<>(a.length);
+        for (int v : a) list.add(v);
         return list;
     }
 
-    public static LinkedList<Integer> generateLinkedList(int n) {
+    static LinkedList<Integer> toLinkedList(int[] a) {
         LinkedList<Integer> list = new LinkedList<>();
-        Random r = new Random();
-        for (int i = 0; i < n; i++) list.add(r.nextInt(1000000));
+        for (int v : a) list.add(v);
         return list;
     }
 
-    public static ArrayDeque<Integer> generateDeque(int n) {
-        ArrayDeque<Integer> dq = new ArrayDeque<>();
-        Random r = new Random();
-        for (int i = 0; i < n; i++) dq.add(r.nextInt(1000000));
+    static ArrayDeque<Integer> toArrayDeque(int[] a) {
+        ArrayDeque<Integer> dq = new ArrayDeque<>(a.length);
+        for (int v : a) dq.add(v);
         return dq;
+    }
+
+    // ===== Реализации пузырьковой сортировки =====
+    static long bubbleSortArrayList(ArrayList<Integer> list) {
+        long start = System.currentTimeMillis();
+        int n = list.size();
+
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - 1 - i; j++) {
+                if (list.get(j) > list.get(j + 1)) {
+                    int tmp = list.get(j);
+                    list.set(j, list.get(j + 1));
+                    list.set(j + 1, tmp);
+                }
+            }
+        }
+
+        return System.currentTimeMillis() - start;
+    }
+
+    static long bubbleSortLinkedList(LinkedList<Integer> list) {
+        long start = System.currentTimeMillis();
+
+        int n = list.size();
+        int[] a = new int[n];
+        int i = 0;
+        for (int v : list) a[i++] = v;
+
+        bubbleSortArray(a);
+
+        list.clear();
+        for (int v : a) list.add(v);
+
+        return System.currentTimeMillis() - start;
+    }
+
+    static long bubbleSortArrayDeque(ArrayDeque<Integer> dq) {
+        long start = System.currentTimeMillis();
+
+        int n = dq.size();
+        int[] a = new int[n];
+        int i = 0;
+        for (int v : dq) a[i++] = v;
+
+        bubbleSortArray(a);
+
+        dq.clear();
+        for (int v : a) dq.add(v);
+
+        return System.currentTimeMillis() - start;
+    }
+
+    // ===== Пузырёк для массива =====
+    static void bubbleSortArray(int[] a) {
+        int n = a.length;
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - 1 - i; j++) {
+                if (a[j] > a[j + 1]) {
+                    int t = a[j];
+                    a[j] = a[j + 1];
+                    a[j + 1] = t;
+                }
+            }
+        }
     }
 }
